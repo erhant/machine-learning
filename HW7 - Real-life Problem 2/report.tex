@@ -1,0 +1,135 @@
+\documentclass[11pt,reqno]{amsart}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{proof}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{courier}
+\usepackage{hyperref}
+\hypersetup{
+    hidelinks=true
+}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\tiny, columns=fullflexible, language=Python, morekeywords={logical_and, log, exp, dot, sqrt, ones, identity}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand\MyBox[2]{
+  \fbox{\lower0.75cm
+    \vbox to 1.7cm{\vfil
+      \hbox to 1.7cm{\hfil\parbox{1.4cm}{#1\\#2}\hfil}
+      \vfil}%
+  }%
+}
+\graphicspath{ {./} }
+
+\begin{document}
+
+\begin{center}
+\large\textbf{Assignment 7 \\ DASC521 Fall 2019} \\
+\normalsize\textbf{Introduction to Machine Learning \\  Erhan Tezcan 0070881 \\ 30.12.2019} \\
+\end{center}
+
+\section{Task}
+We are given 3 problems, each having a significant number of features and a target label of 1 or 0. The data is about a customer delaying their credit card payment (1 day for problem 1, 31 days for problem 2 and 61 days for problem 3), where the target label is 1 for yes and 0 for no. Unlike earlier assignments, now we have a real-life machine learning problem on our hands. We are given the freedom of trying any method, as long as it works of course. AUROC score (Area under Recieving Operating Characteristic) will be our focus on evaluating our methods. Given the fact that our output variable is numeric, this is a regression problem with more than one feature.
+
+\section{Implementation}
+\subsection{Preprocessing}
+We have a lot of features. We will be doing several things to remove some features:
+\begin{enumerate}
+	\item \textbf{Remove the \code{ID} column} \\
+	We do not need this column as it does not contain any information regarding the label. However, we save it during the process to later assign the corresponding predictions to \code{ID}'s in our output file.
+	\item \textbf{Fill \code{NaN} values} \\
+	We assign 0 for the \code{NaN} values. 
+	\item \textbf{Remove low correlated features} \\
+	We calculate the Pearson Correlation of the features using \code{corr()} function given in \code{pandas}. We look at the correlation between features and the target, and remove the features below a given threshold. Note that correlation takes values between 1 and -1, so we only remove those that are close to 0. From a mathematical point of view: \\
+	Remove feature $f$ if their correlation $c$ holds for $|c|<t$ for some threshold $t$. We have set $t=0.005$. \\
+	As a result, for the problem 1 we remove 10 features, for the problem 2 we remove 36 features and for the last problem we remove 5 features.
+	\item \textbf{Convert categorical variables to dichotomous variables} \\
+	There are 3 features which are categorical. We need to convert them to dichotomous features, and for that we used \code{get\_dummies} by \code{pandas}. For problem 1 these features are \code{VAR45}, \code{VAR47} and \code{VAR75}, and when they are dichotomous we have 28, 6 and 48 features instead. For problem 2, these features are \code{VAR32}, \code{VAR65} and \code{VAR195}, and when they are dichotomous we have 48, 25 and 6 columns instead. For the last problem, these features are \code{VAR36} and \code{VAR153}, where when they are converted to dichotomous variables they become 45 and 3 features instead.
+	\item \textbf{Do PCA (Principal Component Analysis)} \\
+	To decrease the number of features, we can do PCA. In our example, we will be implementing PCA such that it retains $95\%$ of the variance. This not only improved the computation time, it also improved the AUROC score. We also \textbf{standardize} the data prior to PCA.
+\end{enumerate}
+
+\subsection{Classification \& Posterior Probabilities}
+We have tried a lot of different methods and chose the best performing one overall. We do not predict the class, instead we give the probability of the target belonging to class 1. This also makes sense because in our case class 0 is shown as 0 and class1 is shown as 1, when we think of this in terms of probabilities the same still applies, 0 probability of being 1 means the class is 0 because this is a binary classification problem. Same goes for 1, if class is 1 then probability of being 1 is also 1. In general, the method that performed well on one problem performed welll on other problems, with respect to other methods. We will be be keeping every result for each problem in the tables \ref{tab:perf1}, \ref{tab:perf2} and \ref{tab:perf3}, which were collected over our evaluations on 3-fold stratified split. Before we start on the methods attempted, here are two honorable mentions:
+\begin{itemize}
+	\item \textbf{Multinomial Naive Bayes} \\
+	Sounded like a good candidate, especially because as we will later see\ \textbf{Gaussian Naive Bayes} performs relatively well. However, \textbf{Multinomial Naive Bayes} does not work with negative values. It is not a good idea to manipulate the data too, so we are not going to use this method.
+	\item \textbf{Gaussian Process Classifier} \\
+	Due to its capability of predicting probabilities, I have tried to use this method. However, a single attempt on a fold itself took so much time (over 7 minutes) that I had to interrupt. Given the extent of machine learning today this might seem like a normal time, but other methods dont evevn reach 1 minute in total (over all folds). That is why I have decided not to use this method.
+\end{itemize}
+Now, we can begin discussing our methods. 
+\begin{itemize}
+	\item \textbf{Support Vector Machines (SVM)} \\
+	A good candidate for binary classification in high-dimensional spaces is SVM. We are using two options: \code{gamma='scale'} and \code{kernel='rbf'}. This seems to be one of the best performing one.
+	\item \textbf{Gaussian Naive Bayes (GNB)} \\
+	Given the probabilistic and numeric nature of this problem, we have tried to use GNB. The results were good compared to other methods (excluding SVM). Note that this is extremely fast!
+	\item \textbf{Gradient Boosting Classifier (GBC)} \\
+	Also given in the quick and dirty solution by the instructor, we have tried to use this method. This method also yields very good results.
+	\item \textbf{Random Forest (RNF)} \\
+	Random Forest is an ensemble method, which is quite famous among machine learning tasks. Similar to the previous assignment, we have decided to give it a go.
+	\item \textbf{Multilayer Perceptrons (MLP)} \\
+	We should never underestimate the power of multilayer perceptrons, so we used it here again.
+	\item \textbf{LightGBM (LGB)} \\
+	LightGBM is another gradient booster framwork. It is quite new compared to the rest, and it is famous for being both accurate and fast.
+	\item \textbf{XGBoost with RF (XGB)} \\
+	XGBoost is also a boosting framework.
+\end{itemize}
+When we compare the results it appears that SVM, GBC and LGB are competing. Below, we are listing the best methods for problems 1, 2 and 3 in order.
+\begin{itemize}
+	\item Average AUROC: XGB, XGB, SVM
+	\item Min AUROC: XGB, GBC, SVM
+	\item Max AUROC: XGB, LGB, XGB 
+\end{itemize}
+Overall it seems gradient boosting classifiers work better, SVM is barely able to win over other methods at the third problem. Also when we look at LGB versus GBC, LGB is just very slightly behind GBC. Based on these results, we have decided to use XGBoost, as it is better, especially on the first problem and majorly on the average AUROC score.
+\begin{table}[h]
+\begin{tabular}{|c|l|l|l|l|}
+\hline
+Method & \multicolumn{1}{c|}{AVG-AUROC} & \multicolumn{1}{c|}{MIN-AUROC} & \multicolumn{1}{c|}{MAX-AUROC} & \multicolumn{1}{c|}{Time (sec)} \\ \hline
+\multicolumn{1}{|r|}{SVM} & 0.84783 & 0.83716 & 0.85451 & 36.28986 \\ \hline
+\multicolumn{1}{|r|}{GNB} & 0.76791 & 0.76367 & 0.77070 & \textbf{0.05317} \\ \hline
+\multicolumn{1}{|r|}{GBC} & 0.86926 & 0.85839 & 0.87726 & 11.15125 \\ \hline
+\multicolumn{1}{|r|}{RNF} & 0.84173 & 0.82754 & 0.85052 & 8.63230 \\ \hline
+\multicolumn{1}{|r|}{MLP} & 0.83509 & 0.82185 & 0.84234 & 8.59502 \\ \hline
+\multicolumn{1}{|r|}{LGB} & 0.87015 & 0.85810 & 0.87962 & 3.70527 \\ \hline
+\multicolumn{1}{|r|}{XGB} & \textbf{0.87143} & \textbf{0.85997} & \textbf{0.88299} & 9.20582 \\ \hline
+\end{tabular}
+\caption{Method Performances - Problem 1}
+\label{tab:perf1}
+\end{table}
+\begin{table}[h]
+\begin{tabular}{|c|l|l|l|l|}
+\hline
+Method & \multicolumn{1}{c|}{AVG-AUROC} & \multicolumn{1}{c|}{MIN-AUROC} & \multicolumn{1}{c|}{MAX-AUROC} & \multicolumn{1}{c|}{Time (sec)} \\ \hline
+\multicolumn{1}{|r|}{SVM} & 0.76209 & 0.74233 & 0.77762 & 19.37345 \\ \hline
+\multicolumn{1}{|r|}{GNB} & 0.69384 & 0.67763 & 0.70665 & \textbf{0.04953} \\ \hline
+\multicolumn{1}{|r|}{GBC} & 0.77780 & \textbf{0.77487} & 0.78132 & 9.47699 \\ \hline
+\multicolumn{1}{|r|}{RNF} & 0.72882 & 0.72349 & 0.73654 & 10.01324 \\ \hline
+\multicolumn{1}{|r|}{MLP} & 0.75302 & 0.73629 & 0.76176 & 5.21068 \\ \hline
+\multicolumn{1}{|r|}{LGB} & 0.78306 & 0.77411 & \textbf{0.80048} & 3.90060 \\ \hline
+\multicolumn{1}{|r|}{XGB} & \textbf{0.78410} & 0.75820 & 0.79721 & 8.21246 \\ \hline
+\end{tabular}
+\caption{Method Performances - Problem 2}
+\label{tab:perf2}
+\end{table}
+\begin{table}[h]
+\begin{tabular}{|c|l|l|l|l|}
+\hline
+Method & \multicolumn{1}{c|}{AVG-AUROC} & \multicolumn{1}{c|}{MIN-AUROC} & \multicolumn{1}{c|}{MAX-AUROC} & \multicolumn{1}{c|}{Time (sec)} \\ \hline
+\multicolumn{1}{|r|}{SVM} & \textbf{0.78689} & \textbf{0.78509} & 0.79006 & 7.94476 \\ \hline
+\multicolumn{1}{|r|}{GNB} & 0.68891 & 0.66778 & 0.70154 &\textbf{0.02692} \\ \hline
+\multicolumn{1}{|r|}{GBC} & 0.78210 & 0.77727 & 0.78991 & 4.62732 \\ \hline
+\multicolumn{1}{|r|}{RNF} & 0.72116 & 0.70689 & 0.72902 & 3.40445 \\ \hline
+\multicolumn{1}{|r|}{MLP} & 0.78193 & 0.77428 & 0.78618 & 4.25096 \\ \hline
+\multicolumn{1}{|r|}{LGB} & 0.78306 & 0.77411 & 0.78510 & 3.27274 \\ \hline
+\multicolumn{1}{|r|}{XGB} & 0.78669 & 0.77860 & \textbf{0.79217} & 4.66778 \\ \hline
+\end{tabular}
+\caption{Method Performances - Problem 3}
+\label{tab:perf3}
+\end{table}
+
+When I submitted the first draft, I had not used XGBoost wirh RF option in this task, but on my second draft I will use it, and it performs better than other algorithms. There are cases where it falls short by very small score (on magnitudes of 0.01) so I preferred to use XGBoost with RF option.
+\end{document}
