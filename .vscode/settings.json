@@ -1,0 +1,6 @@
+{
+  "explorer.sortOrder": "type",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs":"active",  
+  "python.formatting.provider": "yapf"
+}
