@@ -99,7 +99,7 @@ def initPlot(X_train, X_test, y_train, y_test, bin_width):
 
 ###### START ######
 # Initialize data
-data = extractDataset('hw04_data_set.csv')
+data = extractDataset('dataset.csv')
 data_train = data[:150]
 data_test = data[150:]
 X_train = data_train[:, 0]

@@ -41,10 +41,10 @@ def bayes(X, mean, stddev, prior):
 
 #### START #####
 # Read data
-images = extractImages('hw01_images.csv')  # A CSV file where each line holds pixels
+images = extractImages('images.csv')  # A CSV file where each line holds pixels
 
 # Read labels
-labels = extractLabels('hw01_labels.csv')  # A CSV file where each line has a number (1 or 2) for class.
+labels = extractLabels('labels.csv')  # A CSV file where each line has a number (1 or 2) for class.
 labelToGender = {
     1: "Female",
     2: "Male"

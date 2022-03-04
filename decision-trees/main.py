@@ -121,7 +121,7 @@ def cost(y, mean):
 
 ###### START ######
 # Initialize data
-data = extractDataset('hw05_data_set.csv')
+data = extractDataset('dataset.csv')
 data_train = data[:150]
 data_test = data[150:]
 X_train = data_train[:, 0]

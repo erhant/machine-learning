@@ -83,7 +83,7 @@ def convertCategoricalToDichotomous(train, test, verbose=False):
 
 # Output CSV files
 def outputCSV(predictions):
-  predictions.to_csv('hw08_test_predictions.csv', index=False)
+  predictions.to_csv('test_predictions.csv', index=False)
 
 
 # Preprocessing is done here
@@ -189,9 +189,9 @@ def SVM(train, target, test):
 ###################
 
 # Read
-X_train = pd.read_csv('hw08_training_data.csv')
-y_train = pd.read_csv('hw08_training_label.csv')
-X_test = pd.read_csv('hw08_test_data.csv')
+X_train = pd.read_csv('training_data.csv')
+y_train = pd.read_csv('training_label.csv')
+X_test = pd.read_csv('test_data.csv')
 
 # Do each problem differently, with respect to the label
 columns = y_train.columns.values

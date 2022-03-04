@@ -19,10 +19,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 ''' 
-For the Xth problem, the files are named as hw07_targetX_training_data.csv,
-hw07_targetX_training_label.csv, and hw07_targetX_test_data.csv.
+For the Xth problem, the files are named as targetX_training_data.csv,
+targetX_training_label.csv, and targetX_test_data.csv.
 You will train using the data and labels, and make predictions on test data.
-You will output you predictions as hw07_targetX_test_predictions.csv
+You will output you predictions as targetX_test_predictions.csv
 X \in \{1, 2, 3\}
 '''
 
@@ -89,7 +89,7 @@ def convertCategoricalToDichotomous(train, test, verbose=False):
 # Output CSV files
 def outputCSV(predictions):
   for i in range(len(predictions)):
-    predictions[i].to_csv('hw07_target' + str(i + 1) + '_test_predictions.csv', index=False)
+    predictions[i].to_csv('target' + str(i + 1) + '_test_predictions.csv', index=False)
 
 
 # Preprocessing is done here
@@ -280,11 +280,11 @@ def run(path_train, path_target, path_test):
   return pd.concat([test_ids, pd.DataFrame(data=y_pred_np, columns=['TARGET'])], axis=1), auroc_score
 
 
-target1_pred, target1_auroc = run('hw07_target1_training_data.csv', 'hw07_target1_training_label.csv',
-                                  'hw07_target1_test_data.csv')
-target2_pred, target2_auroc = run('hw07_target2_training_data.csv', 'hw07_target2_training_label.csv',
-                                  'hw07_target2_test_data.csv')
-target3_pred, target3_auroc = run('hw07_target3_training_data.csv', 'hw07_target3_training_label.csv',
-                                  'hw07_target3_test_data.csv')
+target1_pred, target1_auroc = run('target1_training_data.csv', 'target1_training_label.csv',
+                                  'target1_test_data.csv')
+target2_pred, target2_auroc = run('target2_training_data.csv', 'target2_training_label.csv',
+                                  'target2_test_data.csv')
+target3_pred, target3_auroc = run('target3_training_data.csv', 'target3_training_label.csv',
+                                  'target3_test_data.csv')
 
 outputCSV([target1_pred, target2_pred, target3_pred])

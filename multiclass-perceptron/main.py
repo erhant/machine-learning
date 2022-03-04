@@ -147,8 +147,8 @@ def learn(X, y, W, V, eta, epsilon, max_iteration):
 
 #### START #####
 # Initial data
-images = extractImages('hw03_images.csv')  # A CSV file where each line holds pixels
-labels = extractLabels('hw03_labels.csv')  # A CSV file where each line has a number for the label
+images = extractImages('images.csv')  # A CSV file where each line holds pixels
+labels = extractLabels('labels.csv')  # A CSV file where each line has a number for the label
 labelToClass = {1: "T-Shirt", 2: "Trouser", 3: "Dress", 4: "Sneaker", 5: "Bag"}  # Labels
 eta = 0.0005  # Initialize Learning rate to 0.0005
 epsilon = 1e-3  # Initialize minimum error to 1e-3
